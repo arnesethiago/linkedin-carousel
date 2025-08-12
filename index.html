@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LinkedIn Carousel Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=General+Sans:wght@400;600;700&family=Outfit:wght@400;600;700;800&family=Space+Grotesk:wght@400;600;700&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <span>LinkedIn Carousel Builder</span>
+      </div>
+      <div class="actions">
+        <button id="btnSetLogo" class="btn">Logo…</button>
+        <input id="logoInput" type="file" accept="image/*" style="display:none" />
+        <input id="imageInput" type="file" accept="image/*" style="display:none" />
+        <div class="sep"></div>
+        <button id="btnExport" class="btn primary">Export PDF</button>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <aside class="templates">
+        <h3>Templates</h3>
+        <div class="template-grid">
+          <button class="template-card" data-template="cover">
+            <div class="preview cover"></div>
+            <span>Classic cover</span>
+          </button>
+          <button class="template-card" data-template="bullets">
+            <div class="preview bullets"></div>
+            <span>Bulleted list</span>
+          </button>
+          <button class="template-card" data-template="statement">
+            <div class="preview statement"></div>
+            <span>Statement</span>
+          </button>
+          <button class="template-card" data-template="steps">
+            <div class="preview steps"></div>
+            <span>Numbered steps</span>
+          </button>
+          <button class="template-card" data-template="image">
+            <div class="preview image"></div>
+            <span>Image slide</span>
+          </button>
+          <button class="template-card" data-template="closing">
+            <div class="preview closing"></div>
+            <span>Closing / CTA</span>
+          </button>
+        </div>
+        <p class="tips">Tip: click on the slide to edit text. Use duplicate/delete on the top-left of each slide.</p>
+
+        <div class="settings">
+          <h4>Settings</h4>
+          <label class="field">
+            <span>Company name</span>
+            <input id="brandNameInput" type="text" value="Plati AI" />
+          </label>
+          <div class="field cols">
+            <label>
+              <span>Accent</span>
+              <input id="accentInput" type="color" value="#E0FE60" />
+            </label>
+            <label>
+              <span>Text</span>
+              <input id="inkInput" type="color" value="#222222" />
+            </label>
+            <label>
+              <span>Background</span>
+              <input id="backgroundInput" type="color" value="#FFFFFF" />
+            </label>
+          </div>
+          <div class="field cols" style="margin-top:10px">
+            <label>
+              <span>Overlay</span>
+              <input id="overlayColorInput" type="color" value="#000000" />
+            </label>
+            <label>
+              <span>Overlay opacity</span>
+              <input id="overlayOpacityGlobal" type="range" min="0" max="100" value="0" />
+            </label>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <span>Font family</span>
+            <select id="fontSelect">
+              <option value="Inter">Inter</option>
+              <option value="General Sans">General Sans</option>
+              <option value="Outfit">Outfit</option>
+              <option value="Space Grotesk">Space Grotesk</option>
+              <option value="Manrope">Manrope</option>
+              <option value="system-ui">System UI</option>
+            </select>
+          </div>
+          <!-- Export quality fixed in code (scale=8) -->
+          <div class="field" style="margin-top:10px">
+            <span>Background shape</span>
+            <select id="shapeSelect">
+              <option value="none">None</option>
+              <option value="blob" selected>Blob</option>
+              <option value="rings">Rings</option>
+              <option value="waves">Waves</option>
+              <option value="diagonal">Diagonal</option>
+              <option value="grid">Grid</option>
+              <option value="dots">Soft dots</option>
+              <option value="arc">Corner arc</option>
+              <option value="zigzag">Zigzag</option>
+            </select>
+          </div>
+          <label class="field" style="margin-top:6px">
+            <span>Shape opacity</span>
+            <input id="shapeOpacity" type="range" min="0" max="100" value="30"/>
+          </label>
+        </div>
+      </aside>
+
+      <section id="slidesWrapper" class="slides-wrapper">
+        <!-- Slides gerados por JS -->
+      </section>
+    </main>
+
+    <!-- Dependências para exportar PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="./main.js"></script>
+  </body>
+  </html>
+
+
