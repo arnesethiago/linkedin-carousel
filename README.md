@@ -2,6 +2,8 @@
 
 Simple, zero‑build web app to design and export LinkedIn carousel posts. Create 2–10 slides (670×850 px), style them with your brand, add background images or shapes, and export a crisp PDF ready to upload.
 
+Live demo: https://carousel-plati.netlify.app/
+
 ## Features
 
 - Slides sized for LinkedIn: 670×850 px (portrait)
