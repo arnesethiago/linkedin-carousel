@@ -34,46 +34,6 @@
     return e;
   }
 
-  // Função para processar imagens em alta resolução
-  function processHighResImage(file, maxWidth = 1340, maxHeight = 1700) {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      img.onload = () => {
-        // Calcular dimensões mantendo aspect ratio
-        let { width, height } = img;
-        const aspectRatio = width / height;
-        
-        if (width > maxWidth) {
-          width = maxWidth;
-          height = width / aspectRatio;
-        }
-        
-        if (height > maxHeight) {
-          height = maxHeight;
-          width = height * aspectRatio;
-        }
-        
-        // Configurar canvas com dimensões otimizadas
-        canvas.width = width;
-        canvas.height = height;
-        
-        // Melhorar qualidade da renderização
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        
-        // Desenhar imagem no canvas
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        // Retornar dataURL de alta qualidade
-        resolve(canvas.toDataURL('image/png', 1.0));
-      };
-      
-      img.src = URL.createObjectURL(file);
-    });
-  }
 
   function limitSlides() {
     const count = wrapper.querySelectorAll('.slide').length;
@@ -101,14 +61,12 @@
     };
     btnBg.onclick = (e) => {
       e.stopPropagation();
-      imageInput.onchange = async (ev) => {
+      imageInput.onchange = (ev) => {
         const file = ev.target.files && ev.target.files[0];
         if (!file) return;
         
-        try {
-          // Processar imagem de fundo em alta resolução
-          const highResDataUrl = await processHighResImage(file);
-          
+        const reader = new FileReader();
+        reader.onload = () => {
           let bgLayer = slide.querySelector('.bg-layer');
           let shadeLayer = slide.querySelector('.shade-layer');
           if (!bgLayer) {
@@ -119,7 +77,7 @@
             shadeLayer = el('div', 'shade-layer');
             slide.appendChild(shadeLayer);
           }
-          bgLayer.style.backgroundImage = `url(${highResDataUrl})`;
+          bgLayer.style.backgroundImage = `url(${reader.result})`;
           bgLayer.style.backgroundSize = 'cover';
           bgLayer.style.backgroundPosition = 'center';
           bgLayer.style.backgroundRepeat = 'no-repeat';
@@ -131,32 +89,8 @@
             const alpha = Number(overlayOpacityGlobal.value || 30) / 100;
             shadeLayer.style.background = hexToRgba(overlayColorInput.value || '#000000', alpha);
           }
-        } catch (error) {
-          console.error('Erro ao processar imagem de fundo:', error);
-          // Fallback para método original
-          const reader = new FileReader();
-          reader.onload = () => {
-            let bgLayer = slide.querySelector('.bg-layer');
-            let shadeLayer = slide.querySelector('.shade-layer');
-            if (!bgLayer) {
-              bgLayer = el('div', 'bg-layer');
-              slide.prepend(bgLayer);
-            }
-            if (!shadeLayer) {
-              shadeLayer = el('div', 'shade-layer');
-              slide.appendChild(shadeLayer);
-            }
-            bgLayer.style.backgroundImage = `url(${reader.result})`;
-            // Remove qualquer controle antigo por slide e aplica configuração global atual
-            const oldOc = slide.querySelector('.overlay-control');
-            if (oldOc) oldOc.remove();
-            if (typeof overlayColorInput !== 'undefined' && typeof overlayOpacityGlobal !== 'undefined') {
-              const alpha = Number(overlayOpacityGlobal.value || 30) / 100;
-              shadeLayer.style.background = hexToRgba(overlayColorInput.value || '#000000', alpha);
-            }
-          };
-          reader.readAsDataURL(file);
-        }
+        };
+        reader.readAsDataURL(file);
       };
       imageInput.click();
     };
@@ -166,12 +100,22 @@
 
   function makeLogoAndBrand() {
     const container = el('div', 'brand-footer');
-    const logo = el('div', 'logo-slot', 'logo');
+    const logo = el('div', 'logo-slot');
+    
     if (state.logoDataUrl) {
+      const logoImg = document.createElement('img');
+      logoImg.src = state.logoDataUrl;
+      logoImg.style.width = '100%';
+      logoImg.style.height = '100%';
+      logoImg.style.objectFit = 'cover';
+      logoImg.style.borderRadius = '50%';
+      logoImg.setAttribute('crossorigin', 'anonymous');
+      logo.appendChild(logoImg);
       logo.style.border = 'none';
-      logo.style.background = `url(${state.logoDataUrl}) center/cover no-repeat`;
-      logo.textContent = '';
+    } else {
+      logo.textContent = 'logo';
     }
+    
     const brand = el('div', 'brand-name', state.brandName);
     container.append(logo, brand);
     return { logo, brand, container };
@@ -300,58 +244,33 @@
     const title = el('h2', 'title', 'Arc Reactor spotlight');
     title.contentEditable = 'true';
     const imgBox = el('div');
-    imgBox.style.marginTop = '12px';
-    imgBox.style.border = '1px dashed var(--muted)';
-    imgBox.style.borderRadius = '12px';
-    imgBox.style.height = '60%';
-    imgBox.style.display = 'grid';
-    imgBox.style.placeItems = 'center';
     imgBox.className = 'image-container';
+    imgBox.style.border = '1px dashed var(--muted)';
     const btn = el('button', 'btn', 'Escolher imagem…');
     btn.onclick = () => {
-      imageInput.onchange = async (e) => {
+      imageInput.onchange = (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
         
-        try {
-          // Processar imagem em alta resolução
-          const highResDataUrl = await processHighResImage(file);
-          
+        const reader = new FileReader();
+        reader.onload = () => {
           // Criar elemento img para melhor qualidade na exportação
           const img = document.createElement('img');
-          img.src = highResDataUrl;
+          img.src = reader.result;
           img.style.width = '100%';
           img.style.height = '100%';
           img.style.objectFit = 'cover';
           img.style.borderRadius = '12px';
           img.setAttribute('crossorigin', 'anonymous');
           
-          // Aguarda o carregamento da imagem para garantir alta resolução
+          // Aguarda o carregamento da imagem
           img.onload = () => {
             imgBox.style.border = 'none';
             imgBox.innerHTML = '';
             imgBox.appendChild(img);
           };
-        } catch (error) {
-          console.error('Erro ao processar imagem:', error);
-          // Fallback para método original
-          const reader = new FileReader();
-          reader.onload = () => {
-            const img = document.createElement('img');
-            img.src = reader.result;
-            img.style.width = '100%';
-            img.style.height = '100%';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '12px';
-            img.setAttribute('crossorigin', 'anonymous');
-            img.onload = () => {
-              imgBox.style.border = 'none';
-              imgBox.innerHTML = '';
-              imgBox.appendChild(img);
-            };
-          };
-          reader.readAsDataURL(file);
-        }
+        };
+        reader.readAsDataURL(file);
       };
       imageInput.click();
     };
@@ -448,20 +367,15 @@
         useCORS: true, 
         backgroundColor: '#ffffff', 
         logging: false, 
-        allowTaint: false, 
+        allowTaint: true, 
         letterRendering: true,
-        foreignObjectRendering: true,
-        imageTimeout: 15000,
-        removeContainer: true,
-        // Configurações melhoradas para imagens
-        quality: 1.0,
-        pixelRatio: window.devicePixelRatio || 1
+        imageTimeout: 10000
       });
-      // Usar qualidade PNG máxima para preservar detalhes das imagens
-      const img = canvas.toDataURL('image/png', 1.0);
+      // Usar qualidade PNG alta para preservar detalhes das imagens
+      const img = canvas.toDataURL('image/png');
       if (i > 0) pdf.addPage([670, 850], 'portrait');
-      // Usar compressão NONE para manter qualidade máxima
-      pdf.addImage(img, 'PNG', 0, 0, 670, 850, undefined, 'NONE');
+      // Usar compressão FAST (padrão funcional)
+      pdf.addImage(img, 'PNG', 0, 0, 670, 850, undefined, 'FAST');
     }
     pdf.save('carrossel-linkedin.pdf');
     exportRoot.remove();
@@ -469,7 +383,7 @@
 
   // Listeners
   btnSetLogo.addEventListener('click', () => logoInput.click());
-  logoInput.addEventListener('change', async (e) => {
+  logoInput.addEventListener('change', (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -477,12 +391,21 @@
       state.logoDataUrl = reader.result;
       // Atualiza todos os slots existentes
       document.querySelectorAll('.logo-slot').forEach((slot) => {
+        // Limpa conteúdo anterior
+        // eslint-disable-next-line no-param-reassign
+        slot.innerHTML = '';
         // eslint-disable-next-line no-param-reassign
         slot.style.border = 'none';
-        // eslint-disable-next-line no-param-reassign
-        slot.style.background = `url(${state.logoDataUrl}) center/cover no-repeat`;
-        // eslint-disable-next-line no-param-reassign
-        slot.textContent = '';
+        
+        // Criar elemento img para o logo
+        const logoImg = document.createElement('img');
+        logoImg.src = state.logoDataUrl;
+        logoImg.style.width = '100%';
+        logoImg.style.height = '100%';
+        logoImg.style.objectFit = 'cover';
+        logoImg.style.borderRadius = '50%';
+        logoImg.setAttribute('crossorigin', 'anonymous');
+        slot.appendChild(logoImg);
       });
     };
     reader.readAsDataURL(file);
